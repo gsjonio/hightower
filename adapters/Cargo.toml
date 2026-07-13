@@ -1,0 +1,19 @@
+[package]
+name = "hightower-adapters"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Driven adapters for hightower: real Windows implementations of the core ports (ToolHelp32, Authenticode) plus the embedded known-process database."
+
+# Depends on core for the port traits it implements. The heavy OS crates
+# (windows) and serde_json (for the embedded database) get added in the
+# milestones that use them: windows in v0.2.0 (#5), serde_json in v0.3.0 (#7).
+# ponytail: deps added per-milestone, not all up front.
+[dependencies]
+hightower-core = { path = "../core" }
+
+# The windows crate is added here (never in `core`) starting v0.2.0. Kept as a
+# target-gated dependency so the crate can at least type-check the parts that do
+# not need it on non-Windows CI, while the real binary is Windows-only.
+# [target.'cfg(windows)'.dependencies]
+# windows = { version = "0.58", features = [ ... ] }

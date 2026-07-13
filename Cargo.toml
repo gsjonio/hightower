@@ -1,0 +1,26 @@
+# Cargo workspace root -- hexagonal architecture, one crate per ring.
+#
+# Python bridge: a monorepo with three installable packages sharing one
+# lockfile. The split is not cosmetic -- it is the architecture, enforced by
+# the compiler instead of by code review:
+#
+#   core/      the domain and the ports (traits). ZERO OS dependencies.
+#              Any `use windows::...` here fails to compile, because `core`
+#              does not declare the `windows` crate at all.
+#   adapters/  the driven side: real implementations of the core ports that
+#              touch Windows (ToolHelp32, Authenticode) and the embedded
+#              known-process database.
+#   cli/       the driving side: argument parsing plus the composition root
+#              that builds the concrete adapters and injects them into core.
+#
+# `resolver = "2"` is just the modern dependency resolver -- always on for new
+# projects.
+[workspace]
+resolver = "2"
+members = ["core", "adapters", "cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Gustavo Oliveira"]
+license = "MIT"

@@ -1,0 +1,18 @@
+[package]
+name = "hightower-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The hightower command-line tool: scans running Windows processes and explains them in plain language."
+
+[[bin]]
+name = "hightower"
+path = "src/main.rs"
+
+# The driving ring: depends on core (the domain) and adapters (the concrete
+# implementations it wires together). clap arrives with the real subcommands in
+# v0.2.0 (#6); serde_json for --json in v0.5.0 (#9).
+# ponytail: deps added per-milestone, not all up front.
+[dependencies]
+hightower-core = { path = "../core" }
+hightower-adapters = { path = "../adapters" }
