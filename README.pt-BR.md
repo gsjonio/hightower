@@ -3,7 +3,7 @@
 [EN](README.md) | PT-BR
 
 [![CI](https://github.com/gsjonio/hightower/actions/workflows/ci.yml/badge.svg)](https://github.com/gsjonio/hightower/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/gsjonio/hightower/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/gsjonio/hightower/actions/workflows/github-code-scanning/codeql)
+[![CodeQL](https://github.com/gsjonio/hightower/actions/workflows/codeql.yml/badge.svg)](https://github.com/gsjonio/hightower/actions/workflows/codeql.yml)
 [![Rust](https://img.shields.io/badge/rust-1.82%2B-orange?logo=rust)](Cargo.toml)
 [![Release](https://img.shields.io/github/v/release/gsjonio/hightower)](https://github.com/gsjonio/hightower/releases/latest)
 [![License: MIT](https://img.shields.io/github/license/gsjonio/hightower)](LICENSE)
