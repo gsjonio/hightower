@@ -23,3 +23,12 @@
 // Rust, those docs double as a running explanation of the type system, so we
 // make them non-optional at the crate level.
 #![warn(missing_docs)]
+
+pub mod error;
+pub mod ports;
+pub mod process;
+
+// Re-exported at the crate root because nearly every fallible call in the
+// workspace mentions it: `use hightower_core::HightowerError;` reads better than
+// the full module path.
+pub use error::HightowerError;
