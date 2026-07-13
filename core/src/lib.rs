@@ -25,6 +25,7 @@
 #![warn(missing_docs)]
 
 pub mod error;
+pub mod process;
 
 // Re-exported at the crate root because nearly every fallible call in the
 // workspace mentions it: `use hightower_core::HightowerError;` reads better than
