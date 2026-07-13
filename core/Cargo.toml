@@ -11,4 +11,4 @@ description = "Pure domain and ports for hightower: process model, risk heuristi
 # import in the domain into a compile error rather than a review comment.
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-thiserror = "1"
+thiserror = "2"
