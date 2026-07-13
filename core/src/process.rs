@@ -7,7 +7,7 @@
 
 use std::path::PathBuf;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// How trustworthy a process looks, from best to worst.
 ///
@@ -32,7 +32,11 @@ pub enum RiskLevel {
 }
 
 /// The bucket a process falls into, used for grouping and plain-language output.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+///
+/// Derives `Deserialize` because it is also read back from the embedded
+/// known-process database, where the JSON spells the values in kebab-case
+/// (`"core-windows"`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum ProcessCategory {
     /// A core part of Windows itself (e.g. `svchost.exe`, `csrss.exe`).
