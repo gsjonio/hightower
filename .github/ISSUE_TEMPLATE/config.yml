@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation & FAQ (Wiki)
+    url: https://github.com/gsjonio/hightower/wiki
+    about: How hightower works, the risk heuristics, and how to add a known process.
+  - name: Report a security vulnerability (private)
+    url: https://github.com/gsjonio/hightower/security/advisories/new
+    about: Please report vulnerabilities privately here, never in a public issue.

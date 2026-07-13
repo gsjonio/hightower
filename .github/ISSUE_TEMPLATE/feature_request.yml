@@ -1,0 +1,18 @@
+name: Feature request
+description: Suggest an idea or improvement for hightower.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the need first, not the solution. What are you trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like hightower to do? A command, a flag, an output change?
+    validations:
+      required: false

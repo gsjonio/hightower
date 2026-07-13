@@ -1,0 +1,30 @@
+name: Bug report
+description: Something in hightower did not work as expected.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you run, what did you expect, and what happened instead?
+      placeholder: I ran `hightower scan --all` and ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: hightower version
+      description: Output of `hightower --version`.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: windows-version
+    attributes:
+      label: Windows version
+      options:
+        - Windows 11
+        - Windows 10
+        - Other (say which in "What happened?")
+    validations:
+      required: true
