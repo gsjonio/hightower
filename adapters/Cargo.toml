@@ -12,8 +12,14 @@ description = "Driven adapters for hightower: real Windows implementations of th
 [dependencies]
 hightower-core = { path = "../core" }
 
-# The windows crate is added here (never in `core`) starting v0.2.0. Kept as a
-# target-gated dependency so the crate can at least type-check the parts that do
-# not need it on non-Windows CI, while the real binary is Windows-only.
-# [target.'cfg(windows)'.dependencies]
-# windows = { version = "0.58", features = [ ... ] }
+# The windows crate lives here, never in `core`. Target-gated to Windows so the
+# domain crate stays OS-free and this dependency is only pulled on the one
+# platform where the binary actually runs. Only the features this milestone's
+# process listing needs; signature-check features (Cryptography/WinTrust) arrive
+# with that milestone.
+[target."cfg(windows)".dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_Threading",
+] }
