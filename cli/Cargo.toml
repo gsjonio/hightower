@@ -16,3 +16,4 @@ path = "src/main.rs"
 [dependencies]
 hightower-core = { path = "../core" }
 hightower-adapters = { path = "../adapters" }
+clap = { version = "4.6.1", features = ["derive"] }
