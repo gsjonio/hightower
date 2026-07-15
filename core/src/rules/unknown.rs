@@ -26,9 +26,10 @@ impl RiskRule for UnknownProcessRule {
             return None;
         }
 
-        // Not in the database, but a valid signature names a publisher -- that
-        // publisher *is* the recognition, so do not flag it.
-        if let SignatureStatus::Signed { publisher: Some(_) } = &process.signature {
+        // Not in the database, but a trusted digital signature is itself a form
+        // of recognition (it chains to a trusted root), so do not flag it -- even
+        // when we did not extract the publisher's name.
+        if let SignatureStatus::Signed { .. } = &process.signature {
             return None;
         }
 

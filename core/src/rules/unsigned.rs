@@ -14,14 +14,24 @@ use crate::process::{ProcessInfo, RiskFinding, RiskLevel, SignatureStatus};
 ///   signature verifier. Until that step runs the status is `Unchecked`, and
 ///   this rule stays silent -- it never penalises a process for a check that has
 ///   not happened yet.
+/// - It skips processes already in the known-process database. Those are vouched
+///   for by name/location, and many Windows system binaries are catalog-signed
+///   (which the embedded-only signature check reads as `Unsigned`) -- flagging
+///   them would be a false positive.
 pub struct UnsignedBinaryRule;
 
 impl RiskRule for UnsignedBinaryRule {
     fn evaluate(
         &self,
         process: &ProcessInfo,
-        _knowledge: &dyn ProcessKnowledgeRepository,
+        knowledge: &dyn ProcessKnowledgeRepository,
     ) -> Option<RiskFinding> {
+        // A process the database already vouches for is not judged on its
+        // (embedded) signature -- see the doc comment above.
+        if knowledge.lookup(&process.name).is_some() {
+            return None;
+        }
+
         match &process.signature {
             SignatureStatus::Unsigned => Some(RiskFinding::new(
                 RiskLevel::Review,
@@ -44,7 +54,7 @@ impl RiskRule for UnsignedBinaryRule {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::rules::test_support::FakeKnowledge;
+    use crate::rules::test_support::{known, FakeKnowledge};
 
     fn process_with(signature: SignatureStatus) -> ProcessInfo {
         ProcessInfo {
@@ -54,6 +64,16 @@ mod tests {
             restricted: false,
             signature,
         }
+    }
+
+    #[test]
+    fn known_process_is_never_flagged_even_if_unsigned() {
+        let knowledge = FakeKnowledge {
+            entries: vec![known("example.exe", &[r"C:\Windows\System32"])],
+        };
+        let finding =
+            UnsignedBinaryRule.evaluate(&process_with(SignatureStatus::Unsigned), &knowledge);
+        assert!(finding.is_none());
     }
 
     #[test]
