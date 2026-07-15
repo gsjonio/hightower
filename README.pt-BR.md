@@ -41,8 +41,8 @@ todos aqueles nomes no Gerenciador de Tarefas.
 - `hightower scan --json` -- o mesmo scan em JSON, para scripts.
 - Offline-first: sem rede, sem telemetria, nunca.
 
-> Status: desenvolvimento inicial (v0.1.0). Os comandos acima são o roteiro;
-> veja os [milestones](https://github.com/gsjonio/hightower/milestones).
+Os três comandos já funcionam, incluindo vereditos de risco, verificação de
+assinatura Authenticode e o banco de processos conhecidos embarcado.
 
 ## Instalação
 

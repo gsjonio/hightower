@@ -31,7 +31,11 @@ item é -- para você perceber o que está fora do lugar.
   confiáveis do Windows moram em pastas confiáveis.
 - **Assinatura digital:** um tipo de selo à prova de violação da empresa que fez
   o programa (como a Microsoft). Se o selo é válido, você sabe quem fez e que
-  ninguém alterou. O hightower vai usar isso numa versão futura.
+  ninguém alterou. O hightower verifica isso e usa para avaliar o processo.
+- **Veredito de risco:** a opinião do hightower sobre cada processo em uma
+  palavra -- `trusted` (confiável), `review` (revisar) ou `suspicious`
+  (suspeito). É uma dica de onde olhar, **não** um diagnóstico. `suspicious` não
+  quer dizer "malware", e `trusted` não é garantia.
 
 ## Como rodar
 
@@ -50,20 +54,43 @@ dos programas protegidos do sistema, rode o terminal **como Administrador**
 ## Lendo a tabela
 
 ```text
-Scanned 252 running processes:
+Scanned 252 processes: 0 suspicious, 3 to review.
 
-  PID  NAME                 PATH
-    4  System               (restricted)
- 1234  explorer.exe         C:\Windows\explorer.exe
- 5678  chrome.exe           C:\Program Files\Google\Chrome\Application\chrome.exe
+RISK       PID  NAME          CATEGORY      PATH
+review    4242  mystery.exe   unknown       C:\Users\me\Downloads\mystery.exe
+trusted   1234  explorer.exe  core-windows  C:\Windows\explorer.exe
+trusted   5678  chrome.exe    third-party-known  C:\Program Files\Google\Chrome\...
 ```
 
+As linhas mais importantes sobem para o topo. Da esquerda para a direita:
+
+- **RISK** -- a opinião do hightower em uma palavra: `trusted`, `review` ou
+  `suspicious`. Uma dica de onde olhar, não um diagnóstico.
+- **PID** -- a senha de atendimento daquele programa em execução.
 - **NAME** -- o nome do processo.
+- **CATEGORY** -- que tipo de coisa é: `core-windows` (parte do Windows),
+  `third-party-known` (app reconhecido) ou `unknown` (o hightower não tem
+  registro -- comum e não é, por si só, um problema).
 - **PATH** -- onde ele mora. `C:\Windows\...` e `C:\Program Files\...` são lares
-  normais e confiáveis.
-- **(restricted)** -- o Windows não deixou o hightower ler os detalhes deste. Isso
-  é **completamente normal** para programas protegidos do sistema. Rode como
-  Administrador para ver mais. **Não** significa que o processo é ruim.
+  normais e confiáveis. `(restricted)` significa que o Windows não deixou o
+  hightower ler os detalhes -- **completamente normal** para programas protegidos
+  do sistema; rode como Administrador para ver mais. **Não** significa que o
+  processo é ruim.
+
+## Olhando um processo em detalhe
+
+Para investigar um único processo -- por nome ou pelo número PID -- use o
+`explain`:
+
+```sh
+hightower explain svchost.exe
+hightower explain 1234
+```
+
+Ele mostra uma explicação em linguagem simples: o que o processo é, se ter várias
+cópias é normal, o caminho esperado vs. o real, e conselhos cautelosos sobre o
+que fazer se parecer estranho. Você também pode exportar o scan inteiro em JSON
+para scripts com `hightower scan --json`.
 
 ## "Por que tem dez cópias da mesma coisa?"
 
@@ -74,8 +101,8 @@ repetido **não** é, sozinho, um sinal de alerta.
 O sinal de alerta é um nome confiável no **lugar errado**. Um `svchost.exe` de
 verdade mora em `C:\Windows\System32`. Um `svchost.exe` rodando da sua pasta
 `Downloads` é o tipo suspeito -- é um truque que malware usa, vestindo um nome
-confiável como fantasia. (O hightower vai destacar exatamente isso numa versão
-futura.)
+confiável como fantasia. O hightower destaca exatamente isso: marca esse
+processo como `suspicious`.
 
 ## Se algo parecer estranho -- o que fazer, e o que NÃO fazer
 
