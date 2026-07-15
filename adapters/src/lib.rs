@@ -24,3 +24,7 @@ pub mod knowledge;
 // crate from trying to compile code against a `windows` crate that is not there.
 #[cfg(windows)]
 pub mod procinfo;
+
+// Authenticode signature verification -- Windows-only, same reasoning as above.
+#[cfg(windows)]
+pub mod signature;
