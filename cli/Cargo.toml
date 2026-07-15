@@ -17,3 +17,4 @@ path = "src/main.rs"
 hightower-core = { path = "../core" }
 hightower-adapters = { path = "../adapters" }
 clap = { version = "4.6.1", features = ["derive"] }
+serde_json = "1.0.150"
