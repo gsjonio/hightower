@@ -10,6 +10,7 @@
 //! core's ports.
 
 mod explain;
+mod render;
 mod report;
 
 use std::process::ExitCode;
@@ -24,6 +25,7 @@ use hightower_core::ports::{ProcessLister, SignatureVerifier};
 use hightower_core::process::{ProcessInfo, ProcessVerdict, RiskLevel};
 use hightower_core::rules::default_rules;
 
+use crate::render::RenderStyle;
 use crate::report::render_verdict_table;
 
 /// Top-level command line: `hightower <command>`.
@@ -44,6 +46,10 @@ struct Cli {
     /// Which subcommand to run.
     #[command(subcommand)]
     command: Commands,
+    /// Disable coloured output (also honoured: the NO_COLOR environment variable
+    /// and a non-terminal stdout). Global, so it works on every subcommand.
+    #[arg(long, global = true)]
+    no_color: bool,
 }
 
 /// The subcommands hightower understands.
@@ -71,15 +77,19 @@ enum Commands {
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    // The composition root decides how to style output, once, from the terminal
+    // state, NO_COLOR, and --no-color. The renderers receive this and never look
+    // at the environment themselves.
+    let style = RenderStyle::detect(cli.no_color);
     match cli.command {
-        Commands::Scan { all: _, json } => run_scan(json),
-        Commands::Explain { target } => explain::run_explain(&target),
+        Commands::Scan { all: _, json } => run_scan(json, style),
+        Commands::Explain { target } => explain::run_explain(&target, style),
     }
 }
 
 /// Runs `hightower scan`: lists processes, verifies their signatures, classifies
 /// each one, and prints the verdicts worst-first (as a table, or JSON).
-fn run_scan(json: bool) -> ExitCode {
+fn run_scan(json: bool, style: RenderStyle) -> ExitCode {
     // Composition root: pick the real Windows implementations of the ports. Swap
     // these for fakes and the rest of the flow is unchanged -- that is the whole
     // point of depending on the traits.
@@ -112,6 +122,8 @@ fn run_scan(json: bool) -> ExitCode {
     verdicts.sort_by_key(|verdict| std::cmp::Reverse(verdict.risk));
 
     if json {
+        // The machine contract: printed with std's `println!`, never through the
+        // colour-aware stream, so the bytes are exactly serde_json's output.
         return match serde_json::to_string_pretty(&verdicts) {
             Ok(json) => {
                 println!("{json}");
@@ -132,11 +144,13 @@ fn run_scan(json: bool) -> ExitCode {
         .iter()
         .filter(|v| v.risk == RiskLevel::Review)
         .count();
-    println!(
+    // Human output goes through anstream, which enables Windows virtual-terminal
+    // mode so ANSI renders in cmd.exe (and strips it if stdout is not a terminal).
+    anstream::println!(
         "Scanned {} processes: {suspicious} suspicious, {review} to review.\n",
         verdicts.len()
     );
-    print!("{}", render_verdict_table(&verdicts));
+    anstream::print!("{}", render_verdict_table(&verdicts, style));
     ExitCode::SUCCESS
 }
 
