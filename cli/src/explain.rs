@@ -7,15 +7,14 @@ use std::process::ExitCode;
 use hightower_adapters::knowledge::EmbeddedKnowledgeRepository;
 use hightower_adapters::procinfo::ToolHelpProcessLister;
 use hightower_core::ports::{KnownProcess, ProcessKnowledgeRepository, ProcessLister};
-use hightower_core::process::{
-    ProcessCategory, ProcessInfo, ProcessVerdict, RiskLevel, SignatureStatus,
-};
+use hightower_core::process::{ProcessInfo, ProcessVerdict, SignatureStatus};
 
+use crate::render::{category_label, paint, risk_label, risk_style, RenderStyle};
 use crate::{build_classifier, verify_signatures_in_parallel};
 
 /// Entry point for the `explain` subcommand. `target` is either a numeric PID or
 /// a process name (matched case-insensitively).
-pub fn run_explain(target: &str) -> ExitCode {
+pub fn run_explain(target: &str, style: RenderStyle) -> ExitCode {
     let all_processes = match ToolHelpProcessLister.list() {
         Ok(processes) => processes,
         Err(error) => {
@@ -44,11 +43,11 @@ pub fn run_explain(target: &str) -> ExitCode {
     if matches.is_empty() {
         // Not running -- but if the name is one we know, still say what it is.
         if let Some(known) = knowledge.lookup(target) {
-            println!("No process named '{target}' is running right now.\n");
-            println!("What it is:\n  {}\n", known.description_en);
+            anstream::println!("No process named '{target}' is running right now.\n");
+            anstream::println!("What it is:\n  {}\n", known.description_en);
         } else {
-            println!("No running process matches '{target}'.");
-            println!("Try `hightower scan --all` to see what is running.");
+            anstream::println!("No running process matches '{target}'.");
+            anstream::println!("Try `hightower scan --all` to see what is running.");
         }
         return ExitCode::SUCCESS;
     }
@@ -60,43 +59,34 @@ pub fn run_explain(target: &str) -> ExitCode {
         Err(code) => return code,
     };
 
-    let instance_count = matches.len();
-    if instance_count > 1 {
-        let display_name = matches[0].name.clone();
-        println!("{instance_count} instances of '{display_name}' are running.\n");
-        if let Some(known) = knowledge.lookup(&display_name) {
-            println!("What it is:\n  {}\n", known.description_en);
-        } else {
-            println!("This name is not in hightower's known-process list.\n");
-        }
-        println!("Each instance:");
-        for process in &matches {
-            let verdict = classifier.classify(process);
-            println!(
-                "  PID {:<6} {:<10} {}",
-                process.pid,
-                risk_label(verdict.risk),
-                path_display(process)
-            );
-        }
-        println!();
-        print!("{}", guidance());
+    let output = if matches.len() > 1 {
+        let verdicts: Vec<ProcessVerdict> = matches
+            .iter()
+            .map(|process| classifier.classify(process))
+            .collect();
+        let known = knowledge.lookup(&matches[0].name);
+        render_instances(&matches[0].name, &verdicts, known.as_ref(), style)
     } else {
         let verdict = classifier.classify(&matches[0]);
         let known = knowledge.lookup(&matches[0].name);
-        print!("{}", render_detail(&verdict, known.as_ref()));
-    }
+        render_detail(&verdict, known.as_ref(), style)
+    };
 
+    anstream::print!("{output}");
     ExitCode::SUCCESS
 }
 
 /// Renders the full detail block for a single process.
-fn render_detail(verdict: &ProcessVerdict, known: Option<&KnownProcess>) -> String {
+fn render_detail(
+    verdict: &ProcessVerdict,
+    known: Option<&KnownProcess>,
+    style: RenderStyle,
+) -> String {
     let process = &verdict.process;
     let mut out = String::new();
 
     let _ = writeln!(out, "{} — PID {}", process.name, process.pid);
-    let _ = writeln!(out, "  Risk:      {}", risk_label(verdict.risk));
+    let _ = writeln!(out, "  Risk:      {}", painted_risk(verdict, style));
     let _ = writeln!(out, "  Category:  {}", category_label(verdict.category));
     let _ = writeln!(
         out,
@@ -132,13 +122,74 @@ fn render_detail(verdict: &ProcessVerdict, known: Option<&KnownProcess>) -> Stri
     } else {
         out.push_str("  What hightower noticed:\n");
         for finding in &verdict.findings {
-            let _ = writeln!(out, "    - {}", finding.summary);
+            // Colour each bullet by its own severity.
+            let bullet = format!("    - {}", finding.summary);
+            let _ = writeln!(
+                out,
+                "{}",
+                paint(&bullet, risk_style(finding.severity), style.color)
+            );
         }
     }
 
     out.push('\n');
     out.push_str(&guidance());
     out
+}
+
+/// Renders the summary for several instances that share a name: a shared "what
+/// it is", then one coloured risk/path line per instance.
+fn render_instances(
+    name: &str,
+    verdicts: &[ProcessVerdict],
+    known: Option<&KnownProcess>,
+    style: RenderStyle,
+) -> String {
+    let mut out = String::new();
+    let _ = writeln!(
+        out,
+        "{} instances of '{name}' are running.\n",
+        verdicts.len()
+    );
+    match known {
+        Some(known) => {
+            let _ = writeln!(out, "What it is:\n  {}\n", known.description_en);
+        }
+        None => out.push_str("This name is not in hightower's known-process list.\n\n"),
+    }
+
+    out.push_str("Each instance:\n");
+    for verdict in verdicts {
+        // Pad the *plain* label to width, then paint: ANSI escapes must not be
+        // counted as column width, or the colour would throw the alignment off.
+        let risk = paint(
+            &format!("{:<10}", risk_label(verdict.risk)),
+            risk_style(verdict.risk),
+            style.color,
+        );
+        let _ = writeln!(
+            out,
+            "  PID {:<6} {risk} {}",
+            verdict.process.pid,
+            path_display(&verdict.process)
+        );
+    }
+    out.push('\n');
+    out.push_str(&guidance());
+    out
+}
+
+/// The risk label, coloured by its level when the style allows it.
+///
+/// Note the field-width padding in callers is applied to the *plain* label
+/// before painting, because ANSI escapes would otherwise be counted as width and
+/// throw the alignment off.
+fn painted_risk(verdict: &ProcessVerdict, style: RenderStyle) -> String {
+    paint(
+        risk_label(verdict.risk),
+        risk_style(verdict.risk),
+        style.color,
+    )
 }
 
 /// The standard "what to do" footer -- deliberately cautious.
@@ -162,23 +213,6 @@ fn path_display(process: &ProcessInfo) -> String {
     }
 }
 
-fn risk_label(risk: RiskLevel) -> &'static str {
-    match risk {
-        RiskLevel::Trusted => "trusted",
-        RiskLevel::Review => "review",
-        RiskLevel::Suspicious => "suspicious",
-    }
-}
-
-fn category_label(category: ProcessCategory) -> &'static str {
-    match category {
-        ProcessCategory::CoreWindows => "core-windows",
-        ProcessCategory::Driver => "driver",
-        ProcessCategory::ThirdPartyKnown => "third-party-known",
-        ProcessCategory::Unknown => "unknown",
-    }
-}
-
 fn signature_label(signature: &SignatureStatus) -> &'static str {
     match signature {
         SignatureStatus::Unchecked => "not checked",
@@ -192,12 +226,13 @@ fn signature_label(signature: &SignatureStatus) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use hightower_core::process::{ProcessCategory, RiskFinding, RiskLevel};
     use std::path::PathBuf;
 
     fn verdict(name: &str, risk: RiskLevel, findings_text: &[&str]) -> ProcessVerdict {
         let findings = findings_text
             .iter()
-            .map(|text| hightower_core::process::RiskFinding::new(risk, *text))
+            .map(|text| RiskFinding::new(risk, *text))
             .collect();
         ProcessVerdict {
             process: ProcessInfo {
@@ -216,7 +251,11 @@ mod tests {
 
     #[test]
     fn detail_includes_core_fields_and_guidance() {
-        let detail = render_detail(&verdict("svchost.exe", RiskLevel::Trusted, &[]), None);
+        let detail = render_detail(
+            &verdict("svchost.exe", RiskLevel::Trusted, &[]),
+            None,
+            RenderStyle::plain(),
+        );
         assert!(detail.contains("svchost.exe — PID 4321"));
         assert!(detail.contains("Risk:      trusted"));
         assert!(detail.contains("Publisher: Microsoft Windows"));
@@ -229,8 +268,33 @@ mod tests {
         let detail = render_detail(
             &verdict("mystery.exe", RiskLevel::Review, &["not in known list"]),
             None,
+            RenderStyle::plain(),
         );
         assert!(detail.contains("What hightower noticed:"));
         assert!(detail.contains("- not in known list"));
+    }
+
+    #[test]
+    fn plain_detail_has_no_escape_sequences() {
+        let detail = render_detail(
+            &verdict("svchost.exe", RiskLevel::Suspicious, &["bad path"]),
+            None,
+            RenderStyle::plain(),
+        );
+        assert!(!detail.contains('\x1b'));
+    }
+
+    #[test]
+    fn coloured_detail_paints_the_risk() {
+        let style = RenderStyle {
+            color: true,
+            max_width: None,
+        };
+        let detail = render_detail(
+            &verdict("svchost.exe", RiskLevel::Suspicious, &[]),
+            None,
+            style,
+        );
+        assert!(detail.contains('\x1b'));
     }
 }
