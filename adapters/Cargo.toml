@@ -11,6 +11,7 @@ description = "Driven adapters for hightower: real Windows implementations of th
 # ponytail: deps added per-milestone, not all up front.
 [dependencies]
 hightower-core = { path = "../core" }
+serde_json = "1.0.150"
 
 # The windows crate lives here, never in `core`. Target-gated to Windows so the
 # domain crate stays OS-free and this dependency is only pulled on the one

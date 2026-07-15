@@ -15,6 +15,10 @@
 // v0.2.0; the guard is in place from day one.
 #![deny(clippy::undocumented_unsafe_blocks)]
 
+// The known-process database is pure JSON parsing, no OS calls, so it builds
+// everywhere -- no cfg gate.
+pub mod knowledge;
+
 // The process lister talks to the Windows API, so it only exists on Windows.
 // Gating the module (not just the dependency) keeps a non-Windows build of this
 // crate from trying to compile code against a `windows` crate that is not there.
