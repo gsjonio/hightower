@@ -27,6 +27,7 @@
 pub mod error;
 pub mod ports;
 pub mod process;
+pub mod rules;
 
 // Re-exported at the crate root because nearly every fallible call in the
 // workspace mentions it: `use hightower_core::HightowerError;` reads better than
