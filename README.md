@@ -39,8 +39,8 @@ Built for people who have no idea what all those names in Task Manager mean.
 - `hightower scan --json` -- the same scan as machine-readable JSON.
 - Offline-first: no network, no telemetry, ever.
 
-> Status: early development (v0.1.0). The commands above are the roadmap; see
-> the [milestones](https://github.com/gsjonio/hightower/milestones).
+All three commands work today, including risk verdicts, Authenticode signature
+checks, and the embedded known-process database.
 
 ## Install
 
