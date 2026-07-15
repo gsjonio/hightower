@@ -120,6 +120,7 @@ dependencies = [
  "clap",
  "hightower-adapters",
  "hightower-core",
+ "serde_json",
 ]
 
 [[package]]
