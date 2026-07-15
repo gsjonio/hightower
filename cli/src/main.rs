@@ -9,6 +9,7 @@
 //! No OS calls and no risk logic live here directly; both are reached through
 //! core's ports.
 
+mod explain;
 mod report;
 
 use std::process::ExitCode;
@@ -45,8 +46,7 @@ struct Cli {
     command: Commands,
 }
 
-/// The subcommands hightower understands. `explain` joins this enum in a later
-/// milestone.
+/// The subcommands hightower understands.
 #[derive(Subcommand)]
 enum Commands {
     /// Scan running processes and explain them.
@@ -58,19 +58,28 @@ enum Commands {
         // brings them back.
         #[arg(long)]
         all: bool,
+        /// Output machine-readable JSON instead of a table.
+        #[arg(long)]
+        json: bool,
+    },
+    /// Explain a single process in detail, by name or PID.
+    Explain {
+        /// A process name (e.g. `svchost.exe`) or a numeric PID.
+        target: String,
     },
 }
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
     match cli.command {
-        Commands::Scan { all: _ } => run_scan(),
+        Commands::Scan { all: _, json } => run_scan(json),
+        Commands::Explain { target } => explain::run_explain(&target),
     }
 }
 
 /// Runs `hightower scan`: lists processes, verifies their signatures, classifies
-/// each one, and prints the verdicts worst-first.
-fn run_scan() -> ExitCode {
+/// each one, and prints the verdicts worst-first (as a table, or JSON).
+fn run_scan(json: bool) -> ExitCode {
     // Composition root: pick the real Windows implementations of the ports. Swap
     // these for fakes and the rest of the flow is unchanged -- that is the whole
     // point of depending on the traits.
@@ -86,14 +95,10 @@ fn run_scan() -> ExitCode {
 
     verify_signatures_in_parallel(&mut processes);
 
-    let knowledge = match EmbeddedKnowledgeRepository::new() {
-        Ok(knowledge) => knowledge,
-        Err(error) => {
-            eprintln!("hightower: {error}");
-            return ExitCode::FAILURE;
-        }
+    let classifier = match build_classifier() {
+        Ok(classifier) => classifier,
+        Err(code) => return code,
     };
-    let classifier = Classifier::new(default_rules(), Box::new(knowledge));
 
     // Python equivalent: verdicts = [classifier.classify(p) for p in processes]
     let mut verdicts: Vec<ProcessVerdict> = processes
@@ -105,6 +110,19 @@ fn run_scan() -> ExitCode {
     // Reverse turns the ascending Ord (trusted < review < suspicious) into
     // descending; the sort is stable, so same-risk rows keep their PID order.
     verdicts.sort_by_key(|verdict| std::cmp::Reverse(verdict.risk));
+
+    if json {
+        return match serde_json::to_string_pretty(&verdicts) {
+            Ok(json) => {
+                println!("{json}");
+                ExitCode::SUCCESS
+            }
+            Err(error) => {
+                eprintln!("hightower: {error}");
+                ExitCode::FAILURE
+            }
+        };
+    }
 
     let suspicious = verdicts
         .iter()
@@ -122,6 +140,19 @@ fn run_scan() -> ExitCode {
     ExitCode::SUCCESS
 }
 
+/// Builds the classifier from the standard rule set and the embedded knowledge
+/// database. Shared by `scan` and `explain`. On a database-load failure it
+/// prints the error and hands back the exit code to return.
+pub(crate) fn build_classifier() -> Result<Classifier, ExitCode> {
+    match EmbeddedKnowledgeRepository::new() {
+        Ok(knowledge) => Ok(Classifier::new(default_rules(), Box::new(knowledge))),
+        Err(error) => {
+            eprintln!("hightower: {error}");
+            Err(ExitCode::FAILURE)
+        }
+    }
+}
+
 /// Fills in each process's signature status, checking files in parallel.
 ///
 /// Signature verification reads each file from disk, so doing it serially across
@@ -134,7 +165,7 @@ fn run_scan() -> ExitCode {
 /// that the chunks handed to different threads do not overlap -- `chunks_mut`
 /// yields disjoint mutable slices, so there is no shared-mutation data race to
 /// worry about.
-fn verify_signatures_in_parallel(processes: &mut [ProcessInfo]) {
+pub(crate) fn verify_signatures_in_parallel(processes: &mut [ProcessInfo]) {
     if processes.is_empty() {
         return;
     }
