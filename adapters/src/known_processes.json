@@ -1,0 +1,66 @@
+[
+  {
+    "processName": "svchost.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32", "%SystemRoot%\\SysWOW64"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Generic host process that runs Windows services. Having many instances running at the same time is completely normal.",
+    "descriptionPT": "Processo host genérico que roda serviços do Windows. Ter várias instâncias rodando ao mesmo tempo é totalmente normal."
+  },
+  {
+    "processName": "csrss.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Client/Server Runtime Subsystem, an essential part of Windows. It cannot be safely closed; Windows starts more than one on purpose.",
+    "descriptionPT": "Subsistema de Runtime Cliente/Servidor, uma parte essencial do Windows. Não pode ser fechado com segurança; o Windows inicia mais de um de propósito."
+  },
+  {
+    "processName": "winlogon.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Handles signing in and out of Windows and locking the screen. A core system process.",
+    "descriptionPT": "Cuida do login e logout do Windows e do bloqueio de tela. Um processo central do sistema."
+  },
+  {
+    "processName": "wininit.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Windows Start-Up Application. It launches key background services early in the boot process.",
+    "descriptionPT": "Aplicativo de inicialização do Windows. Inicia serviços de fundo importantes cedo no processo de boot."
+  },
+  {
+    "processName": "services.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Service Control Manager, which starts, stops, and manages Windows services. A core system process.",
+    "descriptionPT": "Gerenciador de Controle de Serviços, que inicia, para e gerencia os serviços do Windows. Um processo central do sistema."
+  },
+  {
+    "processName": "lsass.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Local Security Authority Subsystem, which enforces sign-in and security policy. A common name for malware to imitate, so its path matters.",
+    "descriptionPT": "Subsistema de Autoridade de Segurança Local, que aplica o login e a política de segurança. Um nome comum de malware imitar, então o caminho dele importa."
+  },
+  {
+    "processName": "smss.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Session Manager Subsystem, the first user-mode process Windows starts. A core system process.",
+    "descriptionPT": "Subsistema Gerenciador de Sessão, o primeiro processo de modo usuário que o Windows inicia. Um processo central do sistema."
+  },
+  {
+    "processName": "explorer.exe",
+    "expectedDirectories": ["%SystemRoot%"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Windows Explorer: the desktop, taskbar, and file windows. Note it lives directly in the Windows folder, not in System32.",
+    "descriptionPT": "Windows Explorer: a área de trabalho, a barra de tarefas e as janelas de arquivos. Note que ele mora direto na pasta do Windows, não no System32."
+  }
+]
