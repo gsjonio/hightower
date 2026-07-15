@@ -24,6 +24,7 @@
 // make them non-optional at the crate level.
 #![warn(missing_docs)]
 
+pub mod classify;
 pub mod error;
 pub mod ports;
 pub mod process;
