@@ -1,6 +1,6 @@
 name: Feature request
 description: Suggest an idea or improvement for hightower.
-labels: ["enhancement"]
+labels: ["type: feat", "semver: minor"]
 body:
   - type: textarea
     id: problem

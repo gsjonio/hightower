@@ -1,6 +1,6 @@
 name: Bug report
 description: Something in hightower did not work as expected.
-labels: ["bug"]
+labels: ["type: fix", "semver: patch"]
 body:
   - type: textarea
     id: what-happened
