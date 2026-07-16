@@ -3,3 +3,6 @@
 
 # These are committed on purpose for a binary project, so they are NOT ignored:
 #   Cargo.lock  -- reproducible builds of the `hightower` executable
+
+# Claude files
+.claude
