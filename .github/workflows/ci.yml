@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
+    branches: [main, develop]
 
 permissions:
   contents: read
@@ -59,3 +60,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@cargo-audit
       - run: cargo audit
+
+  # Single required status check for the branch rulesets: green only when every
+  # job above is green. Keeps the rich cross-platform matrix (which is what proves
+  # `core` stays OS-free) while giving the rulesets one context named exactly
+  # `CI` to require. A failure in any dependency skips this job, so the check
+  # never reports success and the PR stays blocked.
+  CI:
+    name: CI
+    needs: [test-core, build-cli, fmt, clippy, audit]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "all required checks passed"
