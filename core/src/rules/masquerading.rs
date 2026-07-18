@@ -13,6 +13,20 @@ use crate::process::{ProcessInfo, RiskFinding, RiskLevel};
 ///   about third-party software.
 /// - It cannot judge a process whose real path the OS withheld (restricted); it
 ///   stays silent rather than guess.
+/// - `System32` and `SysWOW64` are treated as equivalent (the WOW64 sibling), so
+///   a legitimate 32-bit system process is not flagged. The trade-off: a file
+///   dropped in the *other* system directory is not flagged either -- acceptable,
+///   because both are OS-protected and writing to them already needs elevation.
+///
+/// ## On 8.3 short paths
+///
+/// The path comes from the lister's `QueryFullProcessImageNameW` (Win32 form),
+/// which returns long paths, and the directories this rule compares against
+/// (`%SystemRoot%`, `System32`, `SysWOW64`) are never 8.3-shortened, so short
+/// paths do not produce a false positive here.
+/// ponytail: if a future known-process entry uses a directory that *can* be
+/// shortened (e.g. under `Program Files`), canonicalize the path in the adapter
+/// (`GetLongPathNameW`) before it reaches `core`.
 pub struct PathMasqueradingRule;
 
 impl RiskRule for PathMasqueradingRule {
@@ -32,7 +46,14 @@ impl RiskRule for PathMasqueradingRule {
         // If the process sits in any of its expected directories, all is well.
         for expected in &known.expected_directories {
             let expected_directory = normalize_directory(&expand_env_placeholders(expected));
-            if actual_directory == expected_directory {
+            // Accept the WOW64 sibling too: a legitimate 32-bit build of a system
+            // process runs from `SysWOW64` rather than `System32` (and vice versa).
+            // Both are OS-protected directories, so treating them as equivalent
+            // avoids a false positive on every 32-bit system process without
+            // meaningfully weakening the check.
+            if actual_directory == expected_directory
+                || actual_directory == wow64_sibling(&expected_directory)
+            {
                 return None;
             }
         }
@@ -72,6 +93,21 @@ fn normalize_directory(directory: &str) -> String {
         .replace('/', "\\")
         .trim_end_matches('\\')
         .to_lowercase()
+}
+
+/// The 64-bit/32-bit sibling of a normalized system directory: `System32` and
+/// `SysWOW64` are interchangeable legitimate homes for a system binary. Returns
+/// the directory unchanged when it names neither.
+///
+/// Input is expected already lower-cased (as [`normalize_directory`] leaves it).
+fn wow64_sibling(directory: &str) -> String {
+    if directory.contains(r"\system32") {
+        directory.replace(r"\system32", r"\syswow64")
+    } else if directory.contains(r"\syswow64") {
+        directory.replace(r"\syswow64", r"\system32")
+    } else {
+        directory.to_string()
+    }
 }
 
 /// Expands `%VAR%` placeholders using environment variables, leaving unknown
@@ -182,5 +218,44 @@ mod tests {
             &FakeKnowledge::empty(),
         );
         assert!(finding.is_none());
+    }
+
+    #[test]
+    fn wow64_sibling_directory_is_accepted() {
+        // svchost's expected dir is System32; a legitimate 32-bit build runs from
+        // SysWOW64, which must not be flagged.
+        let finding = PathMasqueradingRule.evaluate(
+            &process_at("svchost.exe", Some(r"C:\Windows\SysWOW64\svchost.exe")),
+            &knowledge(),
+        );
+        assert!(finding.is_none());
+    }
+
+    #[test]
+    fn system32_accepted_when_expected_is_syswow64() {
+        // Reverse direction: expected dir is SysWOW64, actual is System32.
+        let knowledge = FakeKnowledge {
+            entries: vec![known("thing.exe", &[r"C:\Windows\SysWOW64"])],
+        };
+        let finding = PathMasqueradingRule.evaluate(
+            &process_at("thing.exe", Some(r"C:\Windows\System32\thing.exe")),
+            &knowledge,
+        );
+        assert!(finding.is_none());
+    }
+
+    #[test]
+    fn a_truly_wrong_directory_is_still_flagged_with_wow64_logic() {
+        // The WOW64 acceptance must not swallow a real masquerade: System32 is
+        // expected, and neither System32 nor SysWOW64 matches Temp.
+        let finding = PathMasqueradingRule.evaluate(
+            &process_at("svchost.exe", Some(r"C:\Windows\Temp\svchost.exe")),
+            &knowledge(),
+        );
+        assert_eq!(
+            finding.map(|f| f.severity),
+            Some(RiskLevel::Suspicious),
+            "a known name in Temp must still be flagged"
+        );
     }
 }
