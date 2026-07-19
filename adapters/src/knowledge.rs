@@ -86,4 +86,39 @@ mod tests {
     fn unknown_process_is_none() {
         assert!(repository().lookup("definitely-not-real.exe").is_none());
     }
+
+    #[test]
+    fn database_covers_common_core_processes() {
+        let repository = repository();
+        assert!(
+            repository.entries.len() >= 20,
+            "the curated database should have grown"
+        );
+        for name in ["dwm.exe", "conhost.exe", "WmiPrvSE.exe", "taskmgr.exe"] {
+            assert!(repository.lookup(name).is_some(), "{name} should be known");
+        }
+    }
+
+    /// Security invariant: every entry is a trust assertion, so it must carry an
+    /// expected directory + publisher (never a bare name) and both descriptions.
+    /// This guards future contributions as much as the current data.
+    #[test]
+    fn every_entry_is_well_formed() {
+        for entry in &repository().entries {
+            let name = &entry.process_name;
+            assert!(!name.trim().is_empty(), "an entry has an empty name");
+            assert!(
+                !entry.publisher.trim().is_empty(),
+                "{name} has no publisher"
+            );
+            assert!(
+                !entry.expected_directories.is_empty(),
+                "{name} has no expected directory"
+            );
+            assert!(
+                !entry.description_en.is_empty() && !entry.description_pt.is_empty(),
+                "{name} is missing a description"
+            );
+        }
+    }
 }

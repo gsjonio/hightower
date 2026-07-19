@@ -62,5 +62,125 @@
     "category": "core-windows",
     "descriptionEN": "Windows Explorer: the desktop, taskbar, and file windows. Note it lives directly in the Windows folder, not in System32.",
     "descriptionPT": "Windows Explorer: a área de trabalho, a barra de tarefas e as janelas de arquivos. Note que ele mora direto na pasta do Windows, não no System32."
+  },
+  {
+    "processName": "dwm.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Desktop Window Manager: draws the visual desktop -- window shadows, transparency, and animations. A core part of Windows.",
+    "descriptionPT": "Gerenciador de Janelas da Área de Trabalho: desenha a parte visual do sistema -- sombras de janela, transparência e animações. Uma parte central do Windows."
+  },
+  {
+    "processName": "conhost.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Console Window Host: draws the window for command-line programs. Several instances at once is normal -- one per open console.",
+    "descriptionPT": "Host da Janela de Console: desenha a janela dos programas de linha de comando. Ter várias instâncias ao mesmo tempo é normal -- uma por console aberto."
+  },
+  {
+    "processName": "taskhostw.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Task Host: runs Windows background tasks that live inside DLLs rather than their own program. Multiple instances is normal.",
+    "descriptionPT": "Host de Tarefas: executa tarefas de segundo plano do Windows que vivem dentro de DLLs, e não em um programa próprio. Ter várias instâncias é normal."
+  },
+  {
+    "processName": "sihost.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Shell Infrastructure Host: powers parts of the Start menu, taskbar, and other shell features. A core Windows process.",
+    "descriptionPT": "Host de Infraestrutura do Shell: sustenta partes do menu Iniciar, da barra de tarefas e de outros recursos da interface. Um processo central do Windows."
+  },
+  {
+    "processName": "ctfmon.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "CTF Loader: handles keyboard layouts, handwriting, speech, and other text-input methods. A normal part of Windows.",
+    "descriptionPT": "CTF Loader: cuida de layouts de teclado, escrita à mão, fala e outros métodos de entrada de texto. Uma parte normal do Windows."
+  },
+  {
+    "processName": "RuntimeBroker.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Runtime Broker: checks the permissions of apps from the Microsoft Store (camera, location, and so on). Several instances is normal.",
+    "descriptionPT": "Runtime Broker: verifica as permissões dos aplicativos da Microsoft Store (câmera, localização, etc.). Ter várias instâncias é normal."
+  },
+  {
+    "processName": "dllhost.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "COM Surrogate: hosts small Windows components (like thumbnail generators) in a separate process so a crash does not take the app down. Multiple instances is normal.",
+    "descriptionPT": "COM Surrogate: hospeda pequenos componentes do Windows (como geradores de miniaturas) em um processo separado, para que uma falha não derrube o aplicativo. Ter várias instâncias é normal."
+  },
+  {
+    "processName": "spoolsv.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Print Spooler: manages printing and communication with printers. A core Windows service.",
+    "descriptionPT": "Spooler de Impressão: gerencia a impressão e a comunicação com impressoras. Um serviço central do Windows."
+  },
+  {
+    "processName": "fontdrvhost.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Usermode Font Driver Host: loads and renders fonts safely, isolated from the rest of the system. Two instances is normal.",
+    "descriptionPT": "Host de Driver de Fonte em Modo Usuário: carrega e renderiza fontes com segurança, isolado do resto do sistema. Ter duas instâncias é normal."
+  },
+  {
+    "processName": "audiodg.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Windows Audio Device Graph Isolation: does the actual audio processing (effects, volume) apart from the main audio service. A normal part of Windows.",
+    "descriptionPT": "Isolamento do Gráfico de Dispositivo de Áudio do Windows: faz o processamento de áudio de verdade (efeitos, volume) separado do serviço principal. Uma parte normal do Windows."
+  },
+  {
+    "processName": "taskmgr.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Task Manager: the built-in Windows tool for viewing and ending running programs -- the one you open with Ctrl+Shift+Esc.",
+    "descriptionPT": "Gerenciador de Tarefas: a ferramenta interna do Windows para ver e encerrar programas em execução -- a que você abre com Ctrl+Shift+Esc."
+  },
+  {
+    "processName": "SearchIndexer.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Windows Search Indexer: builds the index that makes searching files and settings fast. A core Windows service.",
+    "descriptionPT": "Indexador da Pesquisa do Windows: monta o índice que deixa a busca por arquivos e configurações rápida. Um serviço central do Windows."
+  },
+  {
+    "processName": "WmiPrvSE.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32\\wbem"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "WMI Provider Host: answers system-information queries that management and monitoring tools make. Multiple instances is normal.",
+    "descriptionPT": "Host de Provedor WMI: responde a consultas de informações do sistema feitas por ferramentas de gerenciamento e monitoramento. Ter várias instâncias é normal."
+  },
+  {
+    "processName": "LogonUI.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Logon UI: draws the sign-in and lock screens. A core Windows process.",
+    "descriptionPT": "Interface de Logon: desenha as telas de login e de bloqueio. Um processo central do Windows."
+  },
+  {
+    "processName": "userinit.exe",
+    "expectedDirectories": ["%SystemRoot%\\System32"],
+    "publisher": "Microsoft Windows",
+    "category": "core-windows",
+    "descriptionEN": "Userinit Logon Application: runs briefly during sign-in to set up your session, then exits. Seeing it only at logon is normal.",
+    "descriptionPT": "Aplicativo de Logon Userinit: roda por um instante durante o login para preparar sua sessão e então encerra. Vê-lo só no login é normal."
   }
 ]
