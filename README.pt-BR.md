@@ -46,14 +46,36 @@ assinatura Authenticode e o banco de processos conhecidos embarcado.
 
 ## Instalação
 
-Requer o toolchain Rust (1.82+). Somente Windows.
+Somente Windows.
+
+**Recomendado -- sem precisar de Rust.** Baixe o instalador, leia o script (boa
+prática para qualquer script vindo da internet) e então execute:
+
+```powershell
+irm https://raw.githubusercontent.com/gsjonio/hightower/main/install.ps1 -OutFile install.ps1
+# leia o install.ps1 e então:
+.\install.ps1
+```
+
+Ele coloca o `hightower.exe` em `%LOCALAPPDATA%\Programs\hightower` e adiciona
+essa pasta ao PATH do seu **usuário** -- sem direitos de administrador, sem tocar
+em nada fora do seu perfil. **Abra um terminal novo** depois e rode
+`hightower scan`.
+
+Rodar de novo atualiza no lugar. Para remover: `.\uninstall.ps1`. O binário não é
+assinado, então o SmartScreen pode avisar na primeira execução.
+
+**A partir do código-fonte** -- requer o toolchain Rust (1.82+):
 
 ```sh
 git clone https://github.com/gsjonio/hightower.git
 cd hightower
-cargo build -p hightower-cli --release
-# binário em target/release/hightower.exe
+cargo install --path cli
 ```
+
+O `cargo install` coloca o binário em `%USERPROFILE%\.cargo\bin`; garanta que
+essa pasta esteja no seu PATH. (O rustup normalmente adiciona -- se o `hightower`
+não for encontrado num terminal novo, é por isso.)
 
 ## Arquitetura
 
