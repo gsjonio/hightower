@@ -31,6 +31,6 @@ serde_json = "1.0.150"
 # replace that. Alternative stack considered and rejected: tabled + owo-colors
 # (owo does not enable Windows VT mode, so cmd.exe would show raw escapes).
 comfy-table = "7.1"
-anstream = "0.6"
+anstream = "1.0"
 anstyle = "1.0"
 terminal_size = "0.4"
