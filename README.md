@@ -44,14 +44,35 @@ checks, and the embedded known-process database.
 
 ## Install
 
-Requires the Rust toolchain (1.82+). Windows only.
+Windows only.
+
+**Recommended -- no Rust needed.** Download the installer, read it (good practice
+for any script off the internet), then run it:
+
+```powershell
+irm https://raw.githubusercontent.com/gsjonio/hightower/main/install.ps1 -OutFile install.ps1
+# read install.ps1, then:
+.\install.ps1
+```
+
+It puts `hightower.exe` in `%LOCALAPPDATA%\Programs\hightower` and adds that
+folder to your **user** PATH -- no administrator rights, nothing touched outside
+your user profile. **Open a new terminal** afterwards, then run `hightower scan`.
+
+Re-running it upgrades in place. To remove it: `.\uninstall.ps1`. The binary is
+unsigned, so SmartScreen may warn on first run.
+
+**From source** -- needs the Rust toolchain (1.82+):
 
 ```sh
 git clone https://github.com/gsjonio/hightower.git
 cd hightower
-cargo build -p hightower-cli --release
-# binary at target/release/hightower.exe
+cargo install --path cli
 ```
+
+`cargo install` puts the binary in `%USERPROFILE%\.cargo\bin`; make sure that
+folder is on your PATH. (rustup normally adds it -- if `hightower` is not found
+in a new terminal, that is why.)
 
 ## Architecture
 
